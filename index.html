@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BT-Golem • Official Website</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+    }
+
+    header {
+      padding: 40px 20px;
+      text-align: center;
+      background: linear-gradient(#151515, #0d0d0d);
+      border-bottom: 2px solid #303030;
+    }
+
+    h1 { margin: 0 0 8px; font-size: 42px; letter-spacing: 1px; }
+    .tagline { color: #bbbbbb; }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #151515;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 22px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 16px;
+      margin-right: 8px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .yt { background:#ff0000; color:#fff; }
+    .dc { background:#5865f2; color:#fff; }
+    .ig { background:#e1306c; color:#fff; }
+    .disabled { background:#3a3a3a; color:#aaaaaa; cursor:not-allowed; }
+
+    /* video grid */
+    #video-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .video-card {
+      background:#101010;
+      border:1px solid #2b2b2b;
+      border-radius:12px;
+      overflow:hidden;
+      text-decoration:none;
+      color:#fff;
+      display:block;
+    }
+
+    .video-card img { width:100%; display:block; }
+    .video-card div { padding:10px; }
+    .video-card h3 { margin:0; font-size:15px; line-height:1.3; }
+
+    footer {
+      text-align:center;
+      padding: 25px;
+      color:#888;
+      border-top:1px solid #252525;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>BT-Golem</h1>
+  <p class="tagline">Minecraft Content Creator • Official Website</p>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>About BT-Golem</h2>
+    <p>BT-Golem creates Minecraft gameplay and fun community content. Stay tuned for updates, projects, and future releases here!</p>
+  </div>
+
+  <div class="card">
+    <h2>Social Links</h2>
+
+    <a class="btn yt" href="https://www.youtube.com/@BT-Golem" target="_blank">YouTube Channel</a>
+    <a class="btn ig" href="#" onclick="comingSoon()">Instagram — Coming Soon</a>
+    <a class="btn dc" href="#" onclick="comingSoon()">Discord — Coming Soon</a>
+
+    <p style="margin-top:10px;color:#bcbcbc;">
+      Instagram & Discord will be added when ready.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Shop — Plushies & Toys</h2>
+    <p>Exciting merch is on the way! Plushies and toys will be available here soon.</p>
+    <a class="btn disabled">🕒 Coming Soon</a>
+  </div>
+
+  <div class="card">
+    <h2>Featured Videos</h2>
+    <div id="video-list"></div>
+  </div>
+
+</div>
+
+<footer>
+  © 2026 BT-Golem — Fan & Community Website
+</footer>
+
+<script>
+function comingSoon() {
+  alert("⏳ This feature is coming soon. Stay tuned!");
+}
+
+const channelId = "UCvVF-IMe7Ri4rgzXE_v6E2w";
+
+const feedUrl =
+  "https://api.allorigins.win/raw?url=" +
+  encodeURIComponent(
+    "https://www.youtube.com/feeds/videos.xml?channel_id=" + channelId
+  );
+
+fetch(feedUrl)
+  .then(res => res.text())
+  .then(str => new DOMParser().parseFromString(str, "text/xml"))
+  .then(data => {
+    const list = document.getElementById("video-list");
+    list.innerHTML = "";
+
+    const entries = Array.from(data.getElementsByTagName("entry"));
+    const videos = [];
+
+    // ---- collect ONLY normal videos (skip Shorts) ----
+    for (const entry of entries) {
+      if (videos.length >= 3) break;
+
+      const title = entry.getElementsByTagName("title")[0].textContent;
+      const link = entry.getElementsByTagName("link")[0].getAttribute("href");
+
+      // ignore Shorts
+      if (link.includes("/shorts/")) continue;
+
+      // extract video id
+      let videoId = "";
+      if (link.includes("watch?v=")) {
+        videoId = new URL(link).searchParams.get("v");
+      }
+      if (!videoId) continue;
+
+      const thumb = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+      videos.push({ title, link, thumb });
+    }
+
+    // ---- render real videos ----
+    videos.forEach(v => {
+      const card = document.createElement("a");
+      card.className = "video-card";
+      card.href = v.link;
+      card.target = "_blank";
+
+      card.innerHTML = `
+        <img src="${v.thumb}">
+        <div><h3>${v.title}</h3></div>
+      `;
+
+      list.appendChild(card);
+    });
+
+    // ---- fill remaining slots with Coming Soon ----
+    for (let i = videos.length; i < 3; i++) {
+      const placeholder = document.createElement("div");
+      placeholder.className = "video-card";
+      placeholder.style.opacity = "0.6";
+
+      placeholder.innerHTML = `
+        <div style="padding:20px; text-align:center;">
+          <h3>🎬 Coming Soon</h3>
+        </div>
+      `;
+
+      list.appendChild(placeholder);
+    }
+  })
+  .catch(() => {
+    document.getElementById("video-list").innerHTML =
+      "<p>Could not load videos right now.</p>";
+  });
+</script>
+
+
+</body>
+</html>
